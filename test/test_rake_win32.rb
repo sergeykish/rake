@@ -50,23 +50,4 @@ class TestRakeWin32 < Rake::TestCase
       Win32.win32_system_dir
     end
   end
-
-  def test_win32_backtrace_with_different_case
-    ex = nil
-    begin
-     raise 'test exception'
-    rescue => ex
-    end
-
-    ex.set_backtrace ['abc', 'rakefile']
-
-    rake = Rake::Application.new
-    rake.options.trace = true
-    rake.instance_variable_set(:@rakefile, 'Rakefile')
-
-    _, err = capture_io { rake.display_error_message(ex) }
-
-    assert_match(/rakefile/, err)
-  end
-
 end

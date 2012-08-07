@@ -96,8 +96,7 @@ Options are:
     having the DSL commands *not* appear in the top level scope.
 
 [<tt>--trace</tt> (-t)]
-    Turn on invoke/execute tracing. Also enable full backtrace on
-    errors.
+    Turn on invoke/execute tracing.
 
 [<tt>--verbose</tt> (-v)]
     Echo the Sys commands to standard output.

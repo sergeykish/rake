@@ -34,7 +34,7 @@ class TestRakeFunctional < Rake::TestCase
 
     rake '-t', 'xyz'
 
-    assert_match(/rake aborted/, @err)
+    assert_match %r{Don't know how to build task}, @err # emacs wart: '
   end
 
   def test_env_available_at_top_scope
@@ -132,7 +132,7 @@ class TestRakeFunctional < Rake::TestCase
 
     rake '-G', "sys1"
 
-    assert_match %r{^Don't know how to build task}, @err # emacs wart: '
+    assert_match %r{Don't know how to build task}, @err # emacs wart: '
   end
 
   def test_nosearch_with_rakefile_uses_local_rakefile
@@ -158,7 +158,7 @@ class TestRakeFunctional < Rake::TestCase
 
     rake "--nosearch"
 
-    assert_match %r{^No Rakefile found}, @err
+    assert_match %r{No Rakefile found}, @err
   end
 
   def test_invalid_command_line_options

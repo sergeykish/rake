@@ -145,7 +145,7 @@ class TestRakeApplication < Rake::TestCase
       @app.instance_eval do
         # pretend we started from the unittest dir
         @original_dir = File.expand_path(".")
-        raw_load_rakefile
+        load_rakefile
       end
     end
 
@@ -175,7 +175,7 @@ class TestRakeApplication < Rake::TestCase
 
     _, err = capture_io do
       app.instance_eval do
-        raw_load_rakefile
+        load_rakefile
       end
     end
 
@@ -190,7 +190,7 @@ class TestRakeApplication < Rake::TestCase
       @app.instance_eval do
         handle_options
         options.silent = true
-        raw_load_rakefile
+        load_rakefile
       end
     end
 
@@ -207,7 +207,7 @@ class TestRakeApplication < Rake::TestCase
     end
 
     ex = assert_raises(RuntimeError) do
-      @app.instance_eval do raw_load_rakefile end
+      @app.instance_eval do load_rakefile end
     end
 
     assert_match(/no rakefile found/i, ex.message)
@@ -365,7 +365,7 @@ class TestRakeApplication < Rake::TestCase
     @app.intern(Rake::Task, "default").enhance { fail }
     ARGV.clear
     ARGV << '-f' << '-s' <<  '--rakelib=""'
-    assert_raises(SystemExit) {
+    assert_raises(RuntimeError) {
       _, err = capture_io { @app.run }
       assert_match(/see full trace/, err)
     }
@@ -377,7 +377,7 @@ class TestRakeApplication < Rake::TestCase
     @app.intern(Rake::Task, "default").enhance { fail }
     ARGV.clear
     ARGV << '-f' << '-s' << '-t'
-    assert_raises(SystemExit) {
+    assert_raises(RuntimeError) {
       _, err = capture_io { @app.run }
       refute_match(/see full trace/, err)
     }
@@ -389,7 +389,7 @@ class TestRakeApplication < Rake::TestCase
     @app.intern(Rake::Task, "default").enhance { fail }
     ARGV.clear
     ARGV << '-f' << '-s' << '--xyzzy'
-    assert_raises(SystemExit) {
+    assert_raises(OptionParser::InvalidOption) {
       capture_io { @app.run }
     }
   ensure
@@ -403,67 +403,6 @@ class TestRakeApplication < Rake::TestCase
     assert_match(/'a' is deprecated/i, err)
     assert_match(/use 'b' instead/i, err)
     assert_match(/at c$/i, err)
-  end
-
-  def test_standard_exception_handling_invalid_option
-    out, err = capture_io do
-      e = assert_raises SystemExit do
-        @app.standard_exception_handling do
-          raise OptionParser::InvalidOption, 'blah'
-        end
-      end
-
-      assert_equal 1, e.status
-    end
-
-    assert_empty out
-    assert_equal "invalid option: blah\n", err
-  end
-
-  def test_standard_exception_handling_other
-    out, err = capture_io do
-      e = assert_raises SystemExit do
-        @app.standard_exception_handling do
-          raise 'blah'
-        end
-      end
-
-      assert_equal 1, e.status
-    end
-
-    assert_empty out
-    assert_match "rake aborted!\n", err
-    assert_match "blah\n", err
-  end
-
-  def test_standard_exception_handling_system_exit
-    out, err = capture_io do
-      e = assert_raises SystemExit do
-        @app.standard_exception_handling do
-          exit 0
-        end
-      end
-
-      assert_equal 0, e.status
-    end
-
-    assert_empty out
-    assert_empty err
-  end
-
-  def test_standard_exception_handling_system_exit_nonzero
-    out, err = capture_io do
-      e = assert_raises SystemExit do
-        @app.standard_exception_handling do
-          exit 5
-        end
-      end
-
-      assert_equal 5, e.status
-    end
-
-    assert_empty out
-    assert_empty err
   end
 
   def util_loader

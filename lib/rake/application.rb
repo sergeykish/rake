@@ -60,27 +60,16 @@ module Rake
     # +init+ on your application.  Then define any tasks.  Finally,
     # call +top_level+ to run your top level tasks.
     def run
-      standard_exception_handling do
-        init
-        load_rakefile
-        top_level
-      end
+      init
+      load_rakefile
+      top_level
     end
 
     # Initialize the command line parameters and app name.
     def init(app_name='rake')
-      standard_exception_handling do
-        @name = app_name
-        handle_options
-        collect_tasks
-      end
-    end
-
-    # Find the rakefile and then load it and any pending imports.
-    def load_rakefile
-      standard_exception_handling do
-        raw_load_rakefile
-      end
+      @name = app_name
+      handle_options
+      collect_tasks
     end
 
     # Run the top level tasks of a Rake application.
@@ -123,36 +112,6 @@ module Rake
         args = []
       end
       [name, args]
-    end
-
-    # Provide standard exception handling for the given block.
-    def standard_exception_handling
-      begin
-        yield
-      rescue SystemExit => ex
-        # Exit silently with current status
-        raise
-      rescue OptionParser::InvalidOption => ex
-        $stderr.puts ex.message
-        exit(false)
-      rescue Exception => ex
-        # Exit with error message
-        display_error_message(ex)
-        exit(false)
-      end
-    end
-
-    # Display the error message that caused the exception.
-    def display_error_message(ex)
-      $stderr.puts "#{name} aborted!"
-      $stderr.puts ex.message
-      if options.trace
-        $stderr.puts ex.backtrace.join("\n")
-      else
-        $stderr.puts Backtrace.collapse(ex.backtrace)
-      end
-      $stderr.puts "Tasks: #{ex.chain}" if has_chain?(ex)
-      $stderr.puts "(See full trace by running task with --trace)" unless options.trace
     end
 
     # Warn about deprecated usage.
@@ -391,7 +350,7 @@ module Rake
             Rake::TaskManager.record_task_metadata = true
           }
         ],
-        ['--trace', '-t', "Turn on invoke/execute tracing, enable full backtrace.",
+        ['--trace', '-t', "Turn on invoke/execute tracing.",
           lambda { |value|
             options.trace = true
             Rake.verbose(true)
@@ -485,7 +444,8 @@ module Rake
         options.silent or original_dir == location
     end
 
-    def raw_load_rakefile # :nodoc:
+    # Find the rakefile and then load it and any pending imports.
+    def load_rakefile
       rakefile, location = find_rakefile_location
       if (! options.ignore_system) &&
           (options.load_system || rakefile.nil?) &&
